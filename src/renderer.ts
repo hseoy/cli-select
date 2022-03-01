@@ -1,4 +1,4 @@
-import ansiEscapes from 'ansi-escapes';
+import ansiEscapes from './ansi-escapes';
 
 const defaultValueRenderer = (value: string, selected: boolean) => ({
   value,

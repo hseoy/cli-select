@@ -34,8 +34,5 @@
     "lint:fix": "eslint ./src --ext .ts --fix",
     "prettier:write": "yarn prettier --write .",
     "prepare": "husky install"
-  },
-  "dependencies": {
-    "ansi-escapes": "^5.0.0"
   }
 }
