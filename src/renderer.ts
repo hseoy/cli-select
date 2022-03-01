@@ -1,8 +1,13 @@
 import ansiEscapes from 'ansi-escapes';
 
+const defaultValueRenderer = (value: string, selected: boolean) => ({
+  value,
+  symbol: selected ? '(x)' : '( )',
+});
+
 export type RenderOptions = {
   values: string[];
-  valueRenderer: (
+  valueRenderer?: (
     value: string,
     selected: boolean,
   ) => { symbol: string; value: string };
@@ -26,7 +31,7 @@ class Renderer {
 
   render({
     values,
-    valueRenderer,
+    valueRenderer = defaultValueRenderer,
     selectedValue = 0,
     indentationCnt = 0,
   }: RenderOptions) {
