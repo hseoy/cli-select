@@ -47,6 +47,7 @@ const cliSelect = (options: CliSelectOptions) => {
         (key.name === 'c' && key.ctrl)
       ) {
         keyInput.close();
+        renderer.cleanup();
 
         resolve(
           key.name !== 'return'
