@@ -8,6 +8,11 @@ const cursorLeft = '\x1B[G';
 const cursorShow = '\x1B[?25h';
 
 describe('renderer test', () => {
+  const valueRenderer = (value: string, selected: boolean) => ({
+    value,
+    symbol: selected ? '(x)' : '( )',
+  });
+
   test('render', () => {
     const writeStream = new ObjectWritableMock();
     const renderer = new Renderer(writeStream);
@@ -16,7 +21,7 @@ describe('renderer test', () => {
 
     expect(writeStream.data[0]).toBe('\x1B[?25l');
 
-    renderer.render({ values: ['TEST', 'TEST2'] });
+    renderer.render({ values: ['TEST', 'TEST2'], valueRenderer });
 
     renderer.cleanup();
 
@@ -41,7 +46,11 @@ describe('renderer test', () => {
 
     expect(writeStream.data[0]).toBe('\x1B[?25l');
 
-    renderer.render({ values: ['TEST', 'TEST2'], selectedValue: 1 });
+    renderer.render({
+      values: ['TEST', 'TEST2'],
+      valueRenderer,
+      selectedValue: 1,
+    });
 
     renderer.cleanup();
 

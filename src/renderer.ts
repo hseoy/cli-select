@@ -2,10 +2,11 @@ import ansiEscapes from 'ansi-escapes';
 
 export type RenderOptions = {
   values: string[];
-  valueRenderer?: (value: string, selected: boolean) => string;
+  valueRenderer: (
+    value: string,
+    selected: boolean,
+  ) => { symbol: string; value: string };
   selectedValue?: number;
-  selected?: string;
-  unselected?: string;
   indentationCnt?: number;
 };
 
@@ -27,20 +28,17 @@ class Renderer {
     values,
     valueRenderer,
     selectedValue = 0,
-    selected = '(x)',
-    unselected = '( )',
     indentationCnt = 0,
   }: RenderOptions) {
     this.values = values;
     values.forEach((value, index) => {
-      const selectSymbol = selectedValue === index ? selected : unselected;
       const indentation = ' '.repeat(indentationCnt);
-      const renderedValue = valueRenderer
-        ? valueRenderer(value, selectedValue === index)
-        : value;
+      const renderedValue = valueRenderer(value, selectedValue === index);
       const end = index !== this.values.length - 1 ? '\n' : '';
 
-      this.stream.write(`${indentation + selectSymbol} ${renderedValue}${end}`);
+      this.stream.write(
+        `${indentation + renderedValue.symbol} ${renderedValue.value}${end}`,
+      );
     });
   }
 
