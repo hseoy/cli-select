@@ -46,9 +46,8 @@ const cliSelect = (options: CliSelectOptions) => {
         key.name === 'escape' ||
         (key.name === 'c' && key.ctrl)
       ) {
-        if (options.cleanup) {
-          renderer.cleanup();
-        }
+        keyInput.close();
+
         resolve(
           key.name !== 'return'
             ? null
@@ -58,6 +57,9 @@ const cliSelect = (options: CliSelectOptions) => {
       }
 
       if (beforeSelectedValue !== selectedValue) {
+        if (options.cleanup) {
+          renderer.cleanup();
+        }
         renderer.render({ ...defaultRenderOptions, selectedValue });
       }
     });
