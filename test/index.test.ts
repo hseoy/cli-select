@@ -1,10 +1,7 @@
-import mockStdin, { MockSTDIN } from 'mock-stdin';
+import mockStdin from 'mock-stdin';
 import cliSelect from '../src/index';
 import keys from './test-helper/keys';
-
-const mockInput = (io: MockSTDIN, value: string) => {
-  setTimeout(() => io.send(value), 500);
-};
+import { mockInput } from './test-helper/mock-functions';
 
 describe('cliSelect module test', () => {
   const io = mockStdin.stdin();
@@ -24,5 +21,21 @@ describe('cliSelect module test', () => {
     const selectedItem = await cliSelect({ values: ['Test', 'Test1'] });
 
     expect(selectedItem).toEqual({ value: 'Test1', id: 1 });
+  });
+
+  test('cancel with ctrl-c', async () => {
+    mockInput(io, keys.ctrlC);
+
+    const selectedItem = await cliSelect({ values: ['Test', 'Test1'] });
+
+    expect(selectedItem).toBe(null);
+  });
+
+  test('cancel with escape', async () => {
+    mockInput(io, keys.escape);
+
+    const selectedItem = await cliSelect({ values: ['Test', 'Test1'] });
+
+    expect(selectedItem).toBe(null);
   });
 });
