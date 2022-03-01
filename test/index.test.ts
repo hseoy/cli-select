@@ -9,11 +9,20 @@ const mockInput = (io: MockSTDIN, value: string) => {
 describe('cliSelect module test', () => {
   const io = mockStdin.stdin();
 
-  test('choose an item', async () => {
-    mockInput(io, keys.escape);
+  test('choose an first item', async () => {
+    mockInput(io, keys.enter);
 
-    const value = await cliSelect();
+    const selectedItem = await cliSelect({ values: ['Test', 'Test1'] });
 
-    console.log(value);
+    expect(selectedItem).toEqual({ value: 'Test', id: 0 });
+  });
+
+  test('choose an next item', async () => {
+    mockInput(io, keys.down);
+    mockInput(io, keys.enter);
+
+    const selectedItem = await cliSelect({ values: ['Test', 'Test1'] });
+
+    expect(selectedItem).toEqual({ value: 'Test1', id: 1 });
   });
 });
