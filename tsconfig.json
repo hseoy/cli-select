@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "outDir": "lib",
+    "outDir": "dist",
     "baseUrl": "./src",
     "strict": true,
     "noImplicitAny": true,
@@ -13,5 +13,5 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*", "test/**/*"],
-  "exclude": ["node_modules/*", "lib", "**/*.js"]
+  "exclude": ["node_modules/*", "dist", "**/*.js"]
 }
