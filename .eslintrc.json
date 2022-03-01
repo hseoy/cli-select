@@ -22,7 +22,8 @@
       "error",
       { "argsIgnorePattern": "^_" }
     ],
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/unbound-method": "off"
   },
   "ignorePatterns": ["node_modules/", "dist", "**/*.js"]
 }
