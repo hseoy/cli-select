@@ -5,7 +5,7 @@ class KeyInput {
 
   private listener: (key: Key) => void;
 
-  constructor(stream = process.stdin) {
+  constructor(stream: NodeJS.ReadStream = process.stdin) {
     this.stream = stream;
     this.listener = () => {};
     this.onKeyPress = this.onKeyPress.bind(this);
