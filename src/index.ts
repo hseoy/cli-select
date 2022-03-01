@@ -34,7 +34,7 @@ const cliSelect = (options: CliSelectOptions) => {
       selectedValue + 1 < values.length ? selectedValue + 1 : values.length - 1,
   };
 
-  return new Promise(resolve => {
+  return new Promise<{ value: string; id: number } | null>(resolve => {
     keyInput.open();
     keyInput.setInputListener(key => {
       const keyName = key.name ?? '';
