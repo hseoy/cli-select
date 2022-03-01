@@ -1,0 +1,13 @@
+.husky
+node_modules
+src/
+test/
+.eslintrc.json
+.gitignore
+.lintstagedrc.json
+.prettierignore
+.prettierrc
+jest.config.js
+tsconfig.build.json
+tsconfig.json
+**/*.test.ts
