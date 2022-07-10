@@ -53,18 +53,13 @@ const cliSelect = (options: CliSelectOptions) => {
             ? null
             : { value: values[selectedOptionIndex], id: selectedOptionIndex },
         );
-        return;
       }
-
-      if (selectOptions.hasSelectedOptionChanged()) {
-        if (options.cleanup) {
-          renderer.cleanup();
-        }
-        renderer.render({
-          ...defaultRenderOptions,
-          selectedValue: selectOptions.getSelectedOptionIndex(),
-        });
+    });
+    selectOptions.setSelectedOptionChangeListener(({ optionIndex }) => {
+      if (options.cleanup) {
+        renderer.cleanup();
       }
+      renderer.render({ ...defaultRenderOptions, selectedValue: optionIndex });
     });
   });
 };

@@ -1,3 +1,8 @@
+type SelectOptionsListenerFunction<T> = (args: {
+  option: T;
+  optionIndex: number;
+}) => void;
+
 class SelectOptions<T> {
   private beforeSelectedOptionIndex: number;
 
@@ -5,10 +10,13 @@ class SelectOptions<T> {
 
   private options: T[];
 
+  private selectedOptionChangeListener: SelectOptionsListenerFunction<T>;
+
   constructor(options: T[]) {
     this.beforeSelectedOptionIndex = 0;
     this.selectedOptionIndex = 0;
     this.options = options;
+    this.selectedOptionChangeListener = () => null;
   }
 
   private getMaxOptionIndex() {
@@ -34,6 +42,8 @@ class SelectOptions<T> {
     this.selectedOptionIndex = isMax
       ? this.getMaxOptionIndex()
       : this.selectedOptionIndex + 1;
+
+    this.callListenerWhenHasSelectedOptionChanged();
   }
 
   public selectPrevOption() {
@@ -44,10 +54,27 @@ class SelectOptions<T> {
     this.selectedOptionIndex = isMin
       ? minOptionIndex
       : this.selectedOptionIndex - 1;
+
+    this.callListenerWhenHasSelectedOptionChanged();
   }
 
   public hasSelectedOptionChanged() {
     return this.beforeSelectedOptionIndex !== this.selectedOptionIndex;
+  }
+
+  public setSelectedOptionChangeListener(
+    listener: SelectOptionsListenerFunction<T>,
+  ) {
+    this.selectedOptionChangeListener = listener;
+  }
+
+  private callListenerWhenHasSelectedOptionChanged() {
+    if (this.hasSelectedOptionChanged()) {
+      this.selectedOptionChangeListener({
+        option: this.getSelectedOption(),
+        optionIndex: this.getSelectedOptionIndex(),
+      });
+    }
   }
 }
 
