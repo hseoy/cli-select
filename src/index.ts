@@ -37,10 +37,11 @@ const cliSelect = (options: CliSelectOptions) => {
   return new Promise<{ value: string; id: number } | null>(resolve => {
     keyInput.open();
     keyInput.setInputListener(key => {
-      const keyName = key.name ?? '';
-      if (isUpDownKey(keyName)) {
-        keyHandlerMap[keyName]();
-      } else if (
+      if (key.name && isUpDownKey(key.name)) {
+        keyHandlerMap[key.name]();
+        return;
+      }
+      if (
         key.name === 'return' ||
         key.name === 'escape' ||
         (key.name === 'c' && key.ctrl)
