@@ -1,3 +1,4 @@
+import SelectOptions from './select-options';
 import Renderer, { RenderOptions } from './renderer';
 import KeyInput from './key-input';
 
@@ -12,26 +13,25 @@ const isUpDownKey = (key: string): key is 'up' | 'down' => {
 };
 
 const cliSelect = (options: CliSelectOptions) => {
-  const keyInput = new KeyInput(options.inputStream);
-  const renderer = new Renderer(options.outputStream);
+  const { values, valueRenderer, indentationCnt, inputStream, outputStream } =
+    options;
 
-  const { values, valueRenderer, indentationCnt } = options;
+  const keyInput = new KeyInput(inputStream);
+  const renderer = new Renderer(outputStream);
+  const selectOptions = new SelectOptions(values);
+
   const defaultRenderOptions: RenderOptions = {
     values,
     valueRenderer,
     indentationCnt,
-    selectedValue: 0,
+    selectedValue: selectOptions.getSelectedOptionIndex(),
   };
 
   renderer.render(defaultRenderOptions);
 
-  let selectedValue = 0;
-  let beforeSelectedValue = 0;
-
-  const keyHandlerMap: Record<'up' | 'down', () => number> = {
-    up: () => (selectedValue - 1 >= 0 ? selectedValue - 1 : 0),
-    down: () =>
-      selectedValue + 1 < values.length ? selectedValue + 1 : values.length - 1,
+  const keyHandlerMap: Record<'up' | 'down', () => void> = {
+    up: () => selectOptions.selectPrevOption(),
+    down: () => selectOptions.selectNextOption(),
   };
 
   return new Promise<{ value: string; id: number } | null>(resolve => {
@@ -39,8 +39,7 @@ const cliSelect = (options: CliSelectOptions) => {
     keyInput.setInputListener(key => {
       const keyName = key.name ?? '';
       if (isUpDownKey(keyName)) {
-        beforeSelectedValue = selectedValue;
-        selectedValue = keyHandlerMap[keyName]();
+        keyHandlerMap[keyName]();
       } else if (
         key.name === 'return' ||
         key.name === 'escape' ||
@@ -48,20 +47,23 @@ const cliSelect = (options: CliSelectOptions) => {
       ) {
         keyInput.close();
         renderer.cleanup();
-
+        const selectedOptionIndex = selectOptions.getSelectedOptionIndex();
         resolve(
           key.name !== 'return'
             ? null
-            : { value: values[selectedValue], id: selectedValue },
+            : { value: values[selectedOptionIndex], id: selectedOptionIndex },
         );
         return;
       }
 
-      if (beforeSelectedValue !== selectedValue) {
+      if (selectOptions.hasSelectedOptionChanged()) {
         if (options.cleanup) {
           renderer.cleanup();
         }
-        renderer.render({ ...defaultRenderOptions, selectedValue });
+        renderer.render({
+          ...defaultRenderOptions,
+          selectedValue: selectOptions.getSelectedOptionIndex(),
+        });
       }
     });
   });
