@@ -1,6 +1,6 @@
 {
   "name": "@hseoy/cli-select",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "To provide a list of selectable items on the command line",
   "main": "dist/index.js",
   "repository": "https://github.com/hseoy/cli-select",
