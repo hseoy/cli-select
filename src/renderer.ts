@@ -1,4 +1,4 @@
-import ansiEscapes from './ansi-escapes';
+import { eraseLines, cursorShow, cursorHide } from './library/ansi-escapes';
 
 const defaultValueRenderer = (value: string, selected: boolean) => ({
   value,
@@ -26,7 +26,7 @@ class Renderer {
   }
 
   init() {
-    this.stream.write(ansiEscapes.cursorHide);
+    this.stream.write(cursorHide);
   }
 
   render({
@@ -48,8 +48,8 @@ class Renderer {
   }
 
   cleanup() {
-    this.stream.write(ansiEscapes.eraseLines(this.values.length));
-    this.stream.write(ansiEscapes.cursorShow);
+    this.stream.write(eraseLines(this.values.length));
+    this.stream.write(cursorShow);
   }
 }
 
