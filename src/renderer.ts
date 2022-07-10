@@ -1,44 +1,68 @@
+import SelectOptions from './select-options';
 import { eraseLines, cursorShow, cursorHide } from './library/ansi-escapes';
 
-const defaultValueRenderer = (value: string, selected: boolean) => ({
+export type ValueRendererFunction = (
+  value: string,
+  selected: boolean,
+) => { symbol: string; value: string };
+
+export const defaultValueRenderer = (value: string, selected: boolean) => ({
   value,
   symbol: selected ? '(x)' : '( )',
 });
 
 export type RenderOptions = {
-  values: string[];
-  valueRenderer?: (
-    value: string,
-    selected: boolean,
-  ) => { symbol: string; value: string };
-  selectedValue?: number;
+  valueRenderer?: ValueRendererFunction;
   indentationCnt?: number;
+  isEraseLines?: boolean;
+  selectOptions: SelectOptions<string>;
 };
 
 class Renderer {
   private stream: NodeJS.WritableStream;
 
-  private values: string[];
+  private values: readonly string[];
 
-  constructor(stream: NodeJS.WritableStream = process.stdout) {
+  private renderOptions: RenderOptions;
+
+  private isInitialRendering: boolean;
+
+  constructor(
+    renderOptions: RenderOptions,
+    stream: NodeJS.WritableStream = process.stdout,
+  ) {
     this.stream = stream;
-    this.values = [];
+    this.values = renderOptions.selectOptions.getOptions();
+    this.renderOptions = renderOptions;
+    this.isInitialRendering = true;
+    this.render = this.render.bind(this);
   }
 
-  init() {
+  public init() {
     this.stream.write(cursorHide);
   }
 
-  render({
-    values,
-    valueRenderer = defaultValueRenderer,
-    selectedValue = 0,
-    indentationCnt = 0,
-  }: RenderOptions) {
-    this.values = values;
-    values.forEach((value, index) => {
+  public render() {
+    const {
+      selectOptions,
+      indentationCnt = 0,
+      valueRenderer = defaultValueRenderer,
+      isEraseLines,
+    } = this.renderOptions;
+    const selectedOptionIndex = selectOptions.getSelectedOptionIndex();
+
+    if (!this.isInitialRendering && isEraseLines) {
+      this.eraseLines();
+    }
+
+    if (this.isInitialRendering) {
+      this.isInitialRendering = false;
+    }
+
+    this.values.forEach((option, index) => {
       const indentation = ' '.repeat(indentationCnt);
-      const renderedValue = valueRenderer(value, selectedValue === index);
+      const isSelected = selectedOptionIndex === index;
+      const renderedValue = valueRenderer(option, isSelected);
       const end = index !== this.values.length - 1 ? '\n' : '';
 
       this.stream.write(
@@ -47,9 +71,15 @@ class Renderer {
     });
   }
 
-  cleanup() {
-    this.stream.write(eraseLines(this.values.length));
+  public cleanup() {
+    if (this.renderOptions.isEraseLines) {
+      this.eraseLines();
+    }
     this.stream.write(cursorShow);
+  }
+
+  private eraseLines() {
+    this.stream.write(eraseLines(this.values.length));
   }
 }
 

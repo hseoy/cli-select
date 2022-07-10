@@ -8,11 +8,11 @@ class SelectOptions<T> {
 
   private selectedOptionIndex: number;
 
-  private options: T[];
+  private options: readonly T[];
 
   private selectedOptionChangeListener: SelectOptionsListenerFunction<T>;
 
-  constructor(options: T[]) {
+  constructor(options: readonly T[]) {
     this.beforeSelectedOptionIndex = 0;
     this.selectedOptionIndex = 0;
     this.options = options;

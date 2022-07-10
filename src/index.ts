@@ -1,57 +1,55 @@
 import SelectOptions from './select-options';
-import Renderer, { RenderOptions } from './renderer';
+import Renderer, { ValueRendererFunction } from './renderer';
 import KeyInput from './key-input';
 
-export type CliSelectOptions = Omit<RenderOptions, 'selectedValue'> & {
+export type CliSelectOptions = {
+  values: string[];
+  valueRenderer?: ValueRendererFunction;
+  indentationCnt?: number;
   cleanup?: boolean;
   inputStream?: NodeJS.ReadStream;
   outputStream?: NodeJS.WritableStream;
 };
 
 const cliSelect = (options: CliSelectOptions) => {
-  const { values, valueRenderer, indentationCnt, inputStream, outputStream } =
-    options;
+  const {
+    values,
+    inputStream,
+    outputStream,
+    cleanup: isEraseLines,
+    ...otherRenderOptions
+  } = options;
 
   const keyInput = new KeyInput(inputStream);
-  const renderer = new Renderer(outputStream);
   const selectOptions = new SelectOptions([...values]);
+  const renderer = new Renderer(
+    { ...otherRenderOptions, isEraseLines, selectOptions },
+    outputStream,
+  );
 
-  const defaultRenderOptions: RenderOptions = {
-    values,
-    valueRenderer,
-    indentationCnt,
-    selectedValue: selectOptions.getSelectedOptionIndex(),
-  };
-
-  renderer.render(defaultRenderOptions);
-
-  const cleanup = () => {
+  const selectCleanup = () => {
     keyInput.close();
-    if (options.cleanup) {
-      renderer.cleanup();
-    }
+    renderer.cleanup();
   };
+
+  renderer.render();
 
   return new Promise<{ value: string; id: number } | null>(resolve => {
+    selectOptions.setSelectedOptionChangeListener(renderer.render);
     keyInput.open();
     keyInput.setArrowInputListener('up', selectOptions.selectPrevOption);
     keyInput.setArrowInputListener('down', selectOptions.selectNextOption);
+
     keyInput.setEnterInputListener(() => {
-      cleanup();
+      selectCleanup();
       resolve({
         value: selectOptions.getSelectedOption(),
         id: selectOptions.getSelectedOptionIndex(),
       });
     });
     keyInput.setCancelInputListener(() => {
-      cleanup();
+      selectCleanup();
       resolve(null);
-    });
-    selectOptions.setSelectedOptionChangeListener(({ optionIndex }) => {
-      if (options.cleanup) {
-        renderer.cleanup();
-      }
-      renderer.render({ ...defaultRenderOptions, selectedValue: optionIndex });
     });
   });
 };
