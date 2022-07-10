@@ -8,17 +8,13 @@ export type CliSelectOptions = Omit<RenderOptions, 'selectedValue'> & {
   outputStream?: NodeJS.WritableStream;
 };
 
-const isUpDownKey = (key: string): key is 'up' | 'down' => {
-  return key === 'up' || key === 'down';
-};
-
 const cliSelect = (options: CliSelectOptions) => {
   const { values, valueRenderer, indentationCnt, inputStream, outputStream } =
     options;
 
   const keyInput = new KeyInput(inputStream);
   const renderer = new Renderer(outputStream);
-  const selectOptions = new SelectOptions(values);
+  const selectOptions = new SelectOptions([...values]);
 
   const defaultRenderOptions: RenderOptions = {
     values,
@@ -29,32 +25,27 @@ const cliSelect = (options: CliSelectOptions) => {
 
   renderer.render(defaultRenderOptions);
 
-  const keyHandlerMap: Record<'up' | 'down', () => void> = {
-    up: () => selectOptions.selectPrevOption(),
-    down: () => selectOptions.selectNextOption(),
+  const cleanup = () => {
+    keyInput.close();
+    if (options.cleanup) {
+      renderer.cleanup();
+    }
   };
 
   return new Promise<{ value: string; id: number } | null>(resolve => {
     keyInput.open();
-    keyInput.setInputListener(key => {
-      if (key.name && isUpDownKey(key.name)) {
-        keyHandlerMap[key.name]();
-        return;
-      }
-      if (
-        key.name === 'return' ||
-        key.name === 'escape' ||
-        (key.name === 'c' && key.ctrl)
-      ) {
-        keyInput.close();
-        renderer.cleanup();
-        const selectedOptionIndex = selectOptions.getSelectedOptionIndex();
-        resolve(
-          key.name !== 'return'
-            ? null
-            : { value: values[selectedOptionIndex], id: selectedOptionIndex },
-        );
-      }
+    keyInput.setArrowInputListener('up', selectOptions.selectPrevOption);
+    keyInput.setArrowInputListener('down', selectOptions.selectNextOption);
+    keyInput.setEnterInputListener(() => {
+      cleanup();
+      resolve({
+        value: selectOptions.getSelectedOption(),
+        id: selectOptions.getSelectedOptionIndex(),
+      });
+    });
+    keyInput.setCancelInputListener(() => {
+      cleanup();
+      resolve(null);
     });
     selectOptions.setSelectedOptionChangeListener(({ optionIndex }) => {
       if (options.cleanup) {

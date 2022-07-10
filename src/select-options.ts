@@ -17,6 +17,9 @@ class SelectOptions<T> {
     this.selectedOptionIndex = 0;
     this.options = options;
     this.selectedOptionChangeListener = () => null;
+
+    this.selectNextOption = this.selectNextOption.bind(this);
+    this.selectPrevOption = this.selectPrevOption.bind(this);
   }
 
   private getMaxOptionIndex() {
